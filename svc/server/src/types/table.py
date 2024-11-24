@@ -1,13 +1,13 @@
-from typing import Any
-
 from pydantic import BaseModel
+from pymongo.collection import ObjectId
 from src.types.field import Field
 
 
 class Table(BaseModel):
     """Model representing Table entity in the DMS."""
 
-    database: str
+    _id: ObjectId | None
+    database_name: str
     table_name: str
     table_fields: list[Field]
 
@@ -40,26 +40,3 @@ class Table(BaseModel):
             if field.field_name == name:
                 return field
         return None
-
-    def _validate_entry(self, entry: dict[str, Any]) -> bool:
-        """Validate input entry.
-
-        Checks the validity of the entry by:
-        - First, comparing sets of keys.
-        - Second, checking types of the values provided against
-        types of the corresponding fields in the table.
-
-        Parameters
-        ----------
-        entry : dict[str, Any]
-            Entry that is to be inserted into the table.
-
-        Returns
-        -------
-        bool
-            True if entry can be inserted into the table.
-        """
-        if set(entry.keys()) != self.columns:
-            return False
-
-        return all((self.field(key).field_type.validate(value) for key, value in entry))

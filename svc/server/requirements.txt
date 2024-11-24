@@ -1,2 +1,5 @@
-flask
 pydantic
+fastapi
+uvicorn[standard]
+pymongo
+python-dotenv
