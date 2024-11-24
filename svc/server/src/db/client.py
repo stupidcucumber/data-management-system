@@ -2,13 +2,13 @@ import os
 from typing import Literal, Optional
 
 from dotenv import load_dotenv
-from pymongo.mongo_client import MongoClient
+from pymongo import AsyncMongoClient, MongoClient
 from pymongo.server_api import ServerApi
 
 load_dotenv()
 
 
-def get_database_client(uri: Optional[str] = None) -> MongoClient:
+def get_mongodb_client(uri: Optional[str] = None) -> MongoClient:
     """Create a new client to connect to the MongoDB cluster.
 
     Parameters
@@ -26,13 +26,33 @@ def get_database_client(uri: Optional[str] = None) -> MongoClient:
     return MongoClient(uri, server_api=ServerApi("1"))
 
 
-def check_connection(uri: Optional[str] = None) -> Literal["healthy", "sick"]:
-    """Check connection with the MongoDB cluster.
+def get_async_mongodb_client(uri: Optional[str] = None) -> AsyncMongoClient:
+    """Create a new asynchronouse client to connect to the MongoDB cluster.
 
     Parameters
     ----------
     uri : Optional[str]
-        URI leading to the MongoDB cluster.
+        URI that leads to the MongoDB cluster.
+
+    Returns
+    -------
+    AsyncMongoClient
+        Client to connect to MongoDB.
+    """
+    if not uri:
+        uri = os.getenv("MONGO_DB_URI")
+    return AsyncMongoClient(uri, server_api=ServerApi("1"))
+
+
+async def check_connection(
+    mongodb_client: AsyncMongoClient,
+) -> Literal["healthy", "sick"]:
+    """Check connection with the MongoDB cluster.
+
+    Parameters
+    ----------
+    mongodb_client : AsyncMongoClient
+        Client to check connection to the MongoDB cluster with.
 
     Returns
     -------
@@ -40,11 +60,10 @@ def check_connection(uri: Optional[str] = None) -> Literal["healthy", "sick"]:
         Returns "healthy" if connection is successful, otherwise
         returns sick.
     """
-    mongodb_client = get_database_client(uri=uri)
     result = "healthy"
 
     try:
-        mongodb_client.admin.command("ping")
+        await mongodb_client.admin.command("ping")
     except Exception:
         result = "sick"
 

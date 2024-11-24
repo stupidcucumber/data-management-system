@@ -1,4 +1,11 @@
 from pydantic import BaseModel
+from pydantic import Field as PydanticField
+from pydantic import (
+    SerializationInfo,
+    ValidationInfo,
+    field_serializer,
+    field_validator,
+)
 from pymongo.collection import ObjectId
 from src.types.field import Field
 
@@ -6,10 +13,25 @@ from src.types.field import Field
 class Table(BaseModel):
     """Model representing Table entity in the DMS."""
 
-    _id: ObjectId | None
+    id: str | None = PydanticField(None, alias="_id")
     database_name: str
     table_name: str
     table_fields: list[Field]
+
+    @field_validator("id", mode="before")
+    @classmethod
+    def _validate_id(cls, value: ObjectId | None, _info: ValidationInfo) -> str | None:
+        if not value:
+            return None
+        return str(value)
+
+    @field_serializer("id")
+    def _serialize_id(
+        self, _id: ObjectId | None, _info: SerializationInfo
+    ) -> str | None:
+        if not _id:
+            return None
+        return str(_id)
 
     @property
     def columns(self) -> set[str]:
