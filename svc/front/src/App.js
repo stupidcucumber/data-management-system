@@ -1,17 +1,23 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import CreateDatabaseForm from './component/create_database_form';
+import DatabaseComponent from './component/db_component';
 import 'bootstrap/dist/css/bootstrap.min.css';
 
 
 const App = () => {
     const [databases, setDatabases] = useState([]);
     const [content, setContent] = useState('Welcome! Click a button to view database details.');
+    const headers = {
+        'Content-Type': 'application/json',
+    }
 
     // Fetch databases from the API
     const fetchDatabases = async () => {
         try {
             const response = await axios.get(
-                'http://' + process.env.SERVER_HOST + ':' + process.env.SERVER_PORT + '/database'
+                'http://localhost:8000/database',
+                {headers}
             );
             setDatabases(response.data); // Assuming response.data is an array of database names
         } catch (error) {
@@ -26,9 +32,13 @@ const App = () => {
     }, []);
 
     const handleCreateDatabase = () => {
-        alert('Database created!');
-        // Add your logic for database creation here.
+        setContent(<CreateDatabaseForm/>)
+        fetchDatabases()
     };
+
+    const handleChooseDatabase = (database_name) => {
+        setContent(<DatabaseComponent database_name={database_name}/>)
+    }
 
     return (
         <div className="container-fluid">
@@ -43,7 +53,7 @@ const App = () => {
                         <button
                             key={index}
                             className="list-group-item list-group-item-action"
-                            onClick={() => setContent(`Details for database: ${db}`)}
+                            onClick={() => handleChooseDatabase(db)}
                         >
                             {db}
                         </button>
@@ -65,9 +75,9 @@ const App = () => {
 
             {/* Main Content */}
             <div className="col-9 d-flex justify-content-center align-items-center">
-            <div className="text-center">
-                <h3>{content}</h3>
-            </div>
+                <div className="text-center">
+                    <h3>{content}</h3>
+                </div>
             </div>
         </div>
         </div>

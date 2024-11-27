@@ -1,8 +1,14 @@
+from datetime import datetime
 from typing import Any
 
 from pydantic import BaseModel
 from pydantic import Field as PydanticField
-from pydantic import ValidationInfo, field_validator
+from pydantic import (
+    SerializationInfo,
+    ValidationInfo,
+    field_serializer,
+    field_validator,
+)
 from src.types.type import FieldAcceptableType, FieldType
 
 
@@ -33,7 +39,19 @@ class TableItemField(BaseModel):
             Properly validated value.
         """
         field_type: FieldType = _info.data["field_type"]
+
+        if isinstance(value, datetime):
+            return value
+
         return field_type.validate(value)
+
+    @field_serializer("field_value")
+    def _serialize_field_value(
+        self, value: FieldAcceptableType, _info: SerializationInfo
+    ) -> int | float | str:
+        if isinstance(value, datetime):
+            return value.isoformat()
+        return value
 
 
 class TableItem(BaseModel):
@@ -41,3 +59,8 @@ class TableItem(BaseModel):
 
     id: str | None = PydanticField(None, alias="_id")
     items: list[TableItemField]
+
+    @field_validator("id", mode="before")
+    @classmethod
+    def _validate_id(cls, value: Any) -> str:
+        return str(value)

@@ -1,13 +1,10 @@
 services:
   server-svc:
     build: svc/server
-    expose:
-      - 8000
+    ports:
+      - "8001:8000"
 
   front-svc:
     build: svc/front
     ports:
-      - "80:80"
-    environment:
-      - SERVER_HOST=server-svc
-      - SERVER_PORT=8000
+      - "80:3000"

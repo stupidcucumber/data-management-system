@@ -14,16 +14,4 @@ RUN npm install
 COPY . .
 
 # Build the React application for production
-RUN npm run build
-
-# Stage 2: Serve the application using a lightweight web server
-FROM nginx:alpine
-
-# Copy the build output from the previous stage to Nginx's web directory
-COPY --from=builder /app/build /usr/share/nginx/html
-
-# Expose port 80 to the outside world
-EXPOSE 80
-
-# Start Nginx server
-CMD ["nginx", "-g", "daemon off;"]
+CMD [ "npm", "start" ]
